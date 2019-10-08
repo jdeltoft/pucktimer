@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:sprintf/sprintf.dart';
+import 'package:vibration/vibration.dart';
+//import 'package:flutter/services.dart';
 import 'dart:async';
 
 void main() => runApp(MyApp());
+
+enum WhyFarther { reset }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -18,12 +22,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
-class Dependencies {
-  final TextStyle textStyle = const TextStyle(fontSize: 20.0, fontFamily: "Bebas Neue");
-  final int timerMillisecondsRefreshRate = 200;
-}
-
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
@@ -33,8 +31,9 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+
+
 class _MyHomePageState extends State<MyHomePage> {
-  Dependencies dependencies = new Dependencies();
   int _currentPeriod = 0;
   List<Stopwatch> _homeTimeByPeriod = List<Stopwatch>();
   List<Stopwatch> _awayTimeByPeriod = List<Stopwatch>();
@@ -67,7 +66,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _toggleHomeTimer(int period) {
+  void _toggleHomeTimer(int period) async {
+    //HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 90);
     setState(() {
       if (_homeTimeByPeriod[period].isRunning) {
         _homeTimeByPeriod[period].stop();
@@ -79,6 +80,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _toggleAwayTimer(int period) {
+    //HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 90);
     setState(() {
       if (_awayTimeByPeriod[period].isRunning) {
         _awayTimeByPeriod[period].stop();
@@ -89,8 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _resetAll () {
+  void _resetAll() {
     setState(() {
+      _currentPeriod = 0;
       for (var period = 0; period < 3; period++) {
         _homeTimeByPeriod[period].stop();
         _awayTimeByPeriod[period].stop();
@@ -106,6 +110,23 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: <Widget>[
+          PopupMenuButton<WhyFarther>(
+            onSelected: (WhyFarther result) { setState(() { _confirmReset(); }); },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<WhyFarther>>[
+              const PopupMenuItem<WhyFarther>(
+                value: WhyFarther.reset,
+                //child: Icon(Icons.restore),
+                child: Text("Reset All Timers"),
+              ),
+              const PopupMenuItem<WhyFarther>(
+                value: null,
+                //child: Icon(Icons.restore),
+                child: Text("Version 0.4"),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -121,8 +142,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: 160,
                       child: RaisedButton(
                         textColor: Colors.white,
-                        color: _awayTimeByPeriod[_currentPeriod].isRunning ? Colors.green[200]:Colors.red[200],
-                        child: Text("VISITOR", style: TextStyle(fontSize: 30),),
+                        color: _awayTimeByPeriod[_currentPeriod].isRunning
+                            ? Colors.green[200]
+                            : Colors.red[200],
+                        child: Text(
+                          "VISITOR",
+                          style: TextStyle(fontSize: 30),
+                        ),
                         elevation: 8,
                         onPressed: () => _toggleAwayTimer(_currentPeriod),
                         shape: new RoundedRectangleBorder(
@@ -130,13 +156,21 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                     ),
-                    Container(height:50),
-
-                    TimerText(sw: _awayTimeByPeriod[0], period: 1,),
-                    Container(height:20),
-                    TimerText(sw: _awayTimeByPeriod[1], period: 2,),
-                    Container(height:20),
-                    TimerText(sw: _awayTimeByPeriod[2], period: 3,),
+                    Container(height: 50),
+                    TimerText(
+                      sw: _awayTimeByPeriod[0],
+                      period: 1,
+                    ),
+                    Container(height: 20),
+                    TimerText(
+                      sw: _awayTimeByPeriod[1],
+                      period: 2,
+                    ),
+                    Container(height: 20),
+                    TimerText(
+                      sw: _awayTimeByPeriod[2],
+                      period: 3,
+                    ),
                   ],
                 ),
                 Column(
@@ -146,8 +180,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: 160,
                       child: RaisedButton(
                         textColor: Colors.white,
-                        color: _homeTimeByPeriod[_currentPeriod].isRunning ? Colors.green[200]:Colors.red[200],
-                        child: Text("HOME", style: TextStyle(fontSize: 30),),
+                        color: _homeTimeByPeriod[_currentPeriod].isRunning
+                            ? Colors.green[200]
+                            : Colors.red[200],
+                        child: Text(
+                          "HOME",
+                          style: TextStyle(fontSize: 30),
+                        ),
                         elevation: 8,
                         onPressed: () => _toggleHomeTimer(_currentPeriod),
                         shape: new RoundedRectangleBorder(
@@ -155,72 +194,99 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                     ),
-                    Container(height:50),
-
-                    TimerText(sw: _homeTimeByPeriod[0], period: 1,),
-                    Container(height:20),
-                    TimerText(sw: _homeTimeByPeriod[1], period: 2,),
-                    Container(height:20),
-                    TimerText(sw: _homeTimeByPeriod[2], period: 3,),
+                    Container(height: 50),
+                    TimerText(
+                      sw: _homeTimeByPeriod[0],
+                      period: 1,
+                    ),
+                    Container(height: 20),
+                    TimerText(
+                      sw: _homeTimeByPeriod[1],
+                      period: 2,
+                    ),
+                    Container(height: 20),
+                    TimerText(
+                      sw: _homeTimeByPeriod[2],
+                      period: 3,
+                    ),
                   ],
                 )
               ],
             ),
-            Container (height: 30,),
+            Container(
+              height: 30,
+            ),
             Text("Choose Period(long press)"),
-            Container (height: 10,),
+            Container(
+              height: 10,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 SizedBox(
-                  width: 50,
-                  height: 50,
+                  width: 70,
+                  height: 70,
                   child: GestureDetector(
-                  onLongPress: () => _updatePeriod(0),
-                  child: RaisedButton(
-                    onPressed: () => print("press 1"),
-                    textColor: Colors.white,
-                    color: _currentPeriod == 0 ? Colors.blue[200]:Colors.grey[200],
-                    child: Text("1", style: TextStyle(fontSize: 30),),
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                    onLongPress: () => _updatePeriod(0),
+                    child: RaisedButton(
+                      onPressed: () => print("press 1"),
+                      textColor: Colors.white,
+                      color: _currentPeriod == 0
+                          ? Colors.blue[200]
+                          : Colors.grey[200],
+                      child: Text(
+                        "1",
+                        style: TextStyle(fontSize: 30),
+                      ),
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
                     ),
-                  ),
                   ),
                 ),
                 SizedBox(
-                  width: 50,
-                  height: 50,
+                  width: 70,
+                  height: 70,
                   child: GestureDetector(
                     onLongPress: () => _updatePeriod(1),
-                  child: RaisedButton(
-                    onPressed: () => print("press 2"),
-                    textColor: Colors.white,
-                    color: _currentPeriod == 1 ? Colors.blue[200]:Colors.grey[200],
-                    child: Text("2", style: TextStyle(fontSize: 30),),
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                    child: RaisedButton(
+                      onPressed: () => print("press 2"),
+                      textColor: Colors.white,
+                      color: _currentPeriod == 1
+                          ? Colors.blue[200]
+                          : Colors.grey[200],
+                      child: Text(
+                        "2",
+                        style: TextStyle(fontSize: 30),
+                      ),
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
                     ),
-                  ),
                   ),
                 ),
                 SizedBox(
-                  width: 50,
-                  height: 50,
+                  width: 70,
+                  height: 70,
                   child: GestureDetector(
                     onLongPress: () => _updatePeriod(2),
-                  child: RaisedButton(
-                    onPressed: () => print("press 3"),
-                    textColor: Colors.white,
-                    color: _currentPeriod == 2 ? Colors.blue[200]:Colors.grey[200],
-                    child: Text("3", style: TextStyle(fontSize: 30),),
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                    child: RaisedButton(
+                      onPressed: () => print("press 3"),
+                      textColor: Colors.white,
+                      color: _currentPeriod == 2
+                          ? Colors.blue[200]
+                          : Colors.grey[200],
+                      child: Text(
+                        "3",
+                        style: TextStyle(fontSize: 30),
+                      ),
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
                     ),
-                  ),
                   ),
                 ),
               ],
@@ -228,10 +294,46 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+      /*
       floatingActionButton: FloatingActionButton(
         onPressed: _resetAll,
         child: Text("RESET"),
       ),
+       */
+    );
+  }
+
+  Future<void> _confirmReset() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Timer Reset'),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8.0))),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text('Reset All'),
+              onPressed: () {
+                _resetAll();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -249,10 +351,10 @@ class TimerTextState extends State<TimerText> {
   TimerTextState({this.sw});
   final Stopwatch sw;
   Timer timer;
-  int milliseconds=0;
-  int hundreds=0;
-  int seconds=0;
-  int minutes=0;
+  int milliseconds = 0;
+  int hundreds = 0;
+  int seconds = 0;
+  int minutes = 0;
 
   @override
   void initState() {
@@ -282,19 +384,20 @@ class TimerTextState extends State<TimerText> {
   @override
   Widget build(BuildContext context) {
     //String theTime = sprintf("P%d%s%02d:%02d", [widget.period, "\u2192", minutes, seconds]);
-    String theTime = sprintf("%02d:%02d", [minutes, seconds]);
+    String theTime = sprintf("%02d:%02d", [minutes, seconds % 60]);
     return new Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Text("Period ${widget.period}"),
         RepaintBoundary(
           child: new SizedBox(
-            height: 42.0,
-            child: Text("$theTime", style: TextStyle(fontSize: 28),)
-          ),
+              height: 42.0,
+              child: Text(
+                "$theTime",
+                style: TextStyle(fontSize: 28),
+              )),
         ),
       ],
     );
   }
 }
-
