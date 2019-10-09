@@ -31,8 +31,6 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-
-
 class _MyHomePageState extends State<MyHomePage> {
   int _currentPeriod = 0;
   List<Stopwatch> _homeTimeByPeriod = List<Stopwatch>();
@@ -67,29 +65,31 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _toggleHomeTimer(int period) async {
-    //HapticFeedback.vibrate();
-    Vibration.vibrate(duration: 90);
-    setState(() {
-      if (_homeTimeByPeriod[period].isRunning) {
-        _homeTimeByPeriod[period].stop();
-      } else {
-        _homeTimeByPeriod[period].start();
-        _awayTimeByPeriod[period].stop();
-      }
-    });
+    if (_homeTimeByPeriod[period].isRunning) {
+      Vibration.vibrate(duration: 50);
+      await Future.delayed(Duration(milliseconds: 150));
+      Vibration.vibrate(duration: 50);
+      _homeTimeByPeriod[period].stop();
+    } else {
+      Vibration.vibrate(duration: 50);
+      _homeTimeByPeriod[period].start();
+      _awayTimeByPeriod[period].stop();
+    }
+    setState(() {});
   }
 
-  void _toggleAwayTimer(int period) {
-    //HapticFeedback.vibrate();
-    Vibration.vibrate(duration: 90);
-    setState(() {
-      if (_awayTimeByPeriod[period].isRunning) {
-        _awayTimeByPeriod[period].stop();
-      } else {
-        _awayTimeByPeriod[period].start();
-        _homeTimeByPeriod[period].stop();
-      }
-    });
+  void _toggleAwayTimer(int period) async {
+    if (_awayTimeByPeriod[period].isRunning) {
+      Vibration.vibrate(duration: 50);
+      await Future.delayed(Duration(milliseconds: 150));
+      Vibration.vibrate(duration: 50);
+      _awayTimeByPeriod[period].stop();
+    } else {
+      Vibration.vibrate(duration: 50);
+      _awayTimeByPeriod[period].start();
+      _homeTimeByPeriod[period].stop();
+    }
+    setState(() {});
   }
 
   void _resetAll() {
@@ -112,7 +112,11 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         actions: <Widget>[
           PopupMenuButton<WhyFarther>(
-            onSelected: (WhyFarther result) { setState(() { _confirmReset(); }); },
+            onSelected: (WhyFarther result) {
+              setState(() {
+                _confirmReset();
+              });
+            },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<WhyFarther>>[
               const PopupMenuItem<WhyFarther>(
                 value: WhyFarther.reset,
@@ -122,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
               const PopupMenuItem<WhyFarther>(
                 value: null,
                 //child: Icon(Icons.restore),
-                child: Text("Version 0.4"),
+                child: Text("Version 0.5"),
               ),
             ],
           ),
@@ -143,13 +147,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: RaisedButton(
                         textColor: Colors.white,
                         color: _awayTimeByPeriod[_currentPeriod].isRunning
-                            ? Colors.green[200]
+                            ? Colors.green[300]
                             : Colors.red[200],
                         child: Text(
                           "VISITOR",
                           style: TextStyle(fontSize: 30),
                         ),
-                        elevation: 8,
+                        elevation: 10,
                         onPressed: () => _toggleAwayTimer(_currentPeriod),
                         shape: new RoundedRectangleBorder(
                           borderRadius: new BorderRadius.circular(10.0),
@@ -181,13 +185,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: RaisedButton(
                         textColor: Colors.white,
                         color: _homeTimeByPeriod[_currentPeriod].isRunning
-                            ? Colors.green[200]
+                            ? Colors.green[300]
                             : Colors.red[200],
                         child: Text(
                           "HOME",
                           style: TextStyle(fontSize: 30),
                         ),
-                        elevation: 8,
+                        elevation: 10,
                         onPressed: () => _toggleHomeTimer(_currentPeriod),
                         shape: new RoundedRectangleBorder(
                           borderRadius: new BorderRadius.circular(10.0),
@@ -232,8 +236,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       onPressed: () => print("press 1"),
                       textColor: Colors.white,
                       color: _currentPeriod == 0
-                          ? Colors.blue[200]
-                          : Colors.grey[200],
+                          ? Colors.blue[300]
+                          : Colors.grey[300],
                       child: Text(
                         "1",
                         style: TextStyle(fontSize: 30),
@@ -254,8 +258,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       onPressed: () => print("press 2"),
                       textColor: Colors.white,
                       color: _currentPeriod == 1
-                          ? Colors.blue[200]
-                          : Colors.grey[200],
+                          ? Colors.blue[300]
+                          : Colors.grey[300],
                       child: Text(
                         "2",
                         style: TextStyle(fontSize: 30),
@@ -276,8 +280,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       onPressed: () => print("press 3"),
                       textColor: Colors.white,
                       color: _currentPeriod == 2
-                          ? Colors.blue[200]
-                          : Colors.grey[200],
+                          ? Colors.blue[300]
+                          : Colors.grey[300],
                       child: Text(
                         "3",
                         style: TextStyle(fontSize: 30),
@@ -384,7 +388,8 @@ class TimerTextState extends State<TimerText> {
   @override
   Widget build(BuildContext context) {
     //String theTime = sprintf("P%d%s%02d:%02d", [widget.period, "\u2192", minutes, seconds]);
-    String theTime = sprintf("%02d:%02d", [minutes, seconds % 60]);
+    String theTime =
+        sprintf("%02d:%02d.%01d", [minutes, seconds % 60, ((hundreds%100)~/10)]);
     return new Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
