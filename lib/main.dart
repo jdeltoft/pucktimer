@@ -105,6 +105,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<bool> _stopAll() async {
+    setState(() {
+      for (var period = 0; period < 3; period++) {
+        _homeTimeByPeriod[period].stop();
+        _awayTimeByPeriod[period].stop();
+      }
+    });
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,13 +136,15 @@ class _MyHomePageState extends State<MyHomePage> {
               const PopupMenuItem<WhyFarther>(
                 value: null,
                 //child: Icon(Icons.restore),
-                child: Text("Version 0.5"),
+                child: Text("Version 0.5.1"),
               ),
             ],
           ),
         ],
       ),
-      body: Center(
+      body: WillPopScope(
+    onWillPop: _stopAll,  // prevent the back button for now, must kill app
+    child:Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -297,6 +309,7 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           ],
         ),
+      ),
       ),
       /*
       floatingActionButton: FloatingActionButton(
