@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:vibration/vibration.dart';
+import 'dart:io';
 //import 'package:flutter/services.dart';
 import 'dart:async';
 
 void main() => runApp(MyApp());
 
-enum WhyFarther { reset }
+enum OptionChoice { reset, exit }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -121,22 +122,30 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: <Widget>[
-          PopupMenuButton<WhyFarther>(
-            onSelected: (WhyFarther result) {
-              setState(() {
-                _confirmReset();
-              });
+          PopupMenuButton<OptionChoice>(
+            onSelected: (OptionChoice result) {
+              if (result == OptionChoice.reset) {
+                setState(() {
+                  _confirmReset();
+                });
+              } else if (result == OptionChoice.exit) {
+                exit(0);
+              }
             },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<WhyFarther>>[
-              const PopupMenuItem<WhyFarther>(
-                value: WhyFarther.reset,
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<OptionChoice>>[
+              const PopupMenuItem<OptionChoice>(
+                value: OptionChoice.reset,
                 //child: Icon(Icons.restore),
                 child: Text("Reset All Timers"),
               ),
-              const PopupMenuItem<WhyFarther>(
+              const PopupMenuItem<OptionChoice>(
+                value: OptionChoice.exit,
+                child: Text("EXIT"),
+              ),
+              const PopupMenuItem<OptionChoice>(
                 value: null,
                 //child: Icon(Icons.restore),
-                child: Text("Version 0.5.1"),
+                child: Text("Version 0.6"),
               ),
             ],
           ),
@@ -162,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ? Colors.green[300]
                             : Colors.red[200],
                         child: Text(
-                          "VISITOR",
+                          "THEM",
                           style: TextStyle(fontSize: 30),
                         ),
                         elevation: 10,
@@ -199,9 +208,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: _homeTimeByPeriod[_currentPeriod].isRunning
                             ? Colors.green[300]
                             : Colors.red[200],
-                        child: Text(
-                          "HOME",
-                          style: TextStyle(fontSize: 30),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Image.asset('assets/viperhead.png'),
+                            //Text( "Vipers", style: TextStyle(fontSize: 30), ),
+                          ],
                         ),
                         elevation: 10,
                         onPressed: () => _toggleHomeTimer(_currentPeriod),
